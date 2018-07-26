@@ -1,16 +1,19 @@
 package RobotDriver;
 
-import Info.EventMessage;
+import com.pcremotecontroller.Info.EventMessage;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
 
 public class Driver{
 
-    public Robot robot;
-    private String device;
-    private static Object message;
-    private boolean writable;
-    private boolean readable;
+    private Robot robot;
+    private Object receivedMessage;
+    private Object sentMessage;
+    private boolean receivedIsWritable;
+    private boolean receivedIsReadable;
+    private boolean sentIsWritable;
+    private boolean sentIsReadable;
     private final int KEY_PRESSED = 1;
     private final int KEY_RELEASED = 2;
     private final int MOVE_CURSOR = 3;
@@ -19,38 +22,32 @@ public class Driver{
     {
         try {
             robot = new Robot();
-            device = null;
-            writable = true;
-            readable = false;
+            receivedIsWritable = true;
+            receivedIsReadable = false;
         } catch (AWTException e) {
             e.printStackTrace();
         }
     }
 
-    public void setDevice(String device)
+    synchronized public void setReceivedMessage(Object message)
     {
-        this.device = device;
-    }
-
-    synchronized public void setMessage(Object message)
-    {
-        if (!writable)
+        if (!receivedIsWritable)
         {
             try {
                 wait();
             } catch (InterruptedException e) {
             }
         }
-        
-        writable = false;
-        this.message = message;
-        readable = true;
+
+        receivedIsWritable = false;
+        this.receivedMessage = message;
+        receivedIsReadable = true;
         notifyAll();
     }
 
-    synchronized public Object getMessage()
+    synchronized public Object getReceivedMessage()
     {
-        if (!readable)
+        if (!receivedIsReadable)
         {
             try {
                 wait();
@@ -58,9 +55,42 @@ public class Driver{
             }
         }
 
-        readable = false;
-        Object message = this.message;
-        writable = true;
+        receivedIsReadable = false;
+        Object message = this.receivedMessage;
+        receivedIsWritable = true;
+        notifyAll();
+        return message;
+    }
+
+    synchronized public void setSentMessage(Object message)
+    {
+        if (!sentIsWritable)
+        {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
+
+        sentIsWritable = false;
+        this.sentMessage = message;
+        sentIsReadable = true;
+        notifyAll();
+    }
+
+    synchronized public Object getSentMessage()
+    {
+        if (!sentIsReadable)
+        {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
+
+        sentIsReadable = false;
+        Object message = this.sentMessage;
+        sentIsWritable = true;
         notifyAll();
         return message;
     }
@@ -78,43 +108,31 @@ public class Driver{
         }
     }
 
-    public void mouseMover(int x, int y)
+    public void mouseMover(float dx, float dy)
     {
         PointerInfo mouseInfo = MouseInfo.getPointerInfo();
         Point mouseCoordinate = mouseInfo.getLocation();
 
         double currentX = mouseCoordinate.x;
         double currentY = mouseCoordinate.y;
-
-        double diffX = x - mouseCoordinate.x + 1;
-        double diffY = y - mouseCoordinate.y + 1;
-
-        double dx = diffX / 1000;
-        double dy = diffY / 1000;
-
-        for(int i = 1; i <= 1000; i++)
-        {
-            currentX += dx;
-            currentY += dy;
-            robot.mouseMove((int)currentX, (int)currentY);
-        }
+        robot.mouseMove((int)(currentX + dx), (int)(currentY + dy));
     }
 
     public void mouseCommand(EventMessage eventMessage)
     {
         if (eventMessage.getKeyStatus() == KEY_PRESSED)
         {
-            robot.mousePress(eventMessage.getKeycode());
+            robot.mousePress(InputEvent.getMaskForButton(eventMessage.getKeycode()));
         }
 
         else if (eventMessage.getKeyStatus() == KEY_RELEASED)
         {
-            robot.mouseRelease(eventMessage.getKeycode());
+            robot.mouseRelease(InputEvent.getMaskForButton(eventMessage.getKeycode()));
         }
 
         else if (eventMessage.getKeyStatus() == MOVE_CURSOR)
         {
-            robot.mouseMove(eventMessage.x, eventMessage.y);
+            mouseMover(eventMessage.getDx(), eventMessage.getDy());
         }
     }
 }

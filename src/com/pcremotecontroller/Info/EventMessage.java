@@ -1,4 +1,4 @@
-package Info;
+package com.pcremotecontroller.Info;
 
 import java.io.Serializable;
 
@@ -7,8 +7,8 @@ public class EventMessage implements Serializable {
     private String device;
     private int keycode;
     private int keyStatus;
-    public int x;
-    public int y;
+    private float dx;
+    private float dy;
 
     public EventMessage(String device, int keycode, int keyStatus)
     {
@@ -17,10 +17,10 @@ public class EventMessage implements Serializable {
         this.keyStatus = keyStatus;
     }
 
-    public void setCoordinate(int x, int y)
+    public void setCoordinate(float dx, float dy)
     {
-        this.x = x;
-        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
     }
 
     public String getDevice()
@@ -36,5 +36,13 @@ public class EventMessage implements Serializable {
     public int getKeyStatus()
     {
         return keyStatus;
+    }
+
+    public float getDx() {
+        return dx;
+    }
+
+    public float getDy() {
+        return dy;
     }
 }

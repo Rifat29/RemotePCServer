@@ -1,4 +1,4 @@
-package Info;
+package com.pcremotecontroller.Info;
 
 import java.io.Serializable;
 

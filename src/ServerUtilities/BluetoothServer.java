@@ -4,16 +4,13 @@ import BluetoothUtilities.ConnectionModule;
 import RobotDriver.Driver;
 import RobotDriver.RobotDecisionMaker;
 
-import java.io.BufferedReader;
+import javax.bluetooth.LocalDevice;
+import javax.bluetooth.RemoteDevice;
+import javax.bluetooth.UUID;
+import javax.microedition.io.Connector;
+import javax.microedition.io.StreamConnection;
+import javax.microedition.io.StreamConnectionNotifier;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-
-import javax.bluetooth.*;
-import javax.microedition.io.*;
 
 /**
 * Class that implements an SPP Server which accepts single line of
@@ -25,13 +22,14 @@ public class BluetoothServer {
 	private void startServer() throws IOException{
 
 		//Create a UUID for SPP
-		UUID uuid = new UUID("1101", true);
+
+		UUID uuid = new UUID("0000110100001000800000805f9b34fb", false);
 
 		//Create the service url
-		String connectionString = "btspp://localhost:" + uuid +";name=Sample SPP Server";
+		String connectionString = "btspp://localhost:" + uuid + ";name=Sample SPP Server";
 
 		//open server url
-		StreamConnectionNotifier streamConnNotifier = (StreamConnectionNotifier)Connector.open( connectionString );
+		StreamConnectionNotifier streamConnNotifier = (StreamConnectionNotifier)Connector.open(connectionString);
 
 		//Wait for client connection
 		System.out.println("\nServer Started. Waiting for clients to connect...");
@@ -43,6 +41,9 @@ public class BluetoothServer {
 		Thread receiverThread = new Thread(new ServerReceiver(connectionModule, driver));
 		receiverThread.start();
 
+		Thread senderThread = new Thread(new ServerSender(connectionModule, driver));
+		senderThread.start();
+
 		Thread decisionMakerThread = new Thread(new RobotDecisionMaker(driver));
 		decisionMakerThread.start();
 
@@ -52,6 +53,7 @@ public class BluetoothServer {
 
 		try {
 			receiverThread.join();
+			senderThread.join();
 			decisionMakerThread.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();

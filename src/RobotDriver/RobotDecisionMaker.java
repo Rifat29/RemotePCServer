@@ -1,6 +1,6 @@
 package RobotDriver;
 
-import Info.EventMessage;
+import com.pcremotecontroller.Info.EventMessage;
 
 public class RobotDecisionMaker implements Runnable {
 
@@ -14,7 +14,7 @@ public class RobotDecisionMaker implements Runnable {
 
         while(true)
         {
-            Object message = driver.getMessage();
+            Object message = driver.getReceivedMessage();
 
             if (message instanceof EventMessage)
             {

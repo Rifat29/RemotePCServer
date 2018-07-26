@@ -3,12 +3,12 @@ package ServerUtilities;
 import BluetoothUtilities.ConnectionModule;
 import RobotDriver.Driver;
 
-public class ServerReceiver implements Runnable{
+public class ServerSender implements Runnable {
 
     private ConnectionModule connectionModule;
     private Driver driver;
 
-    public ServerReceiver(ConnectionModule connectionModule, Driver driver)
+    public ServerSender(ConnectionModule connectionModule, Driver driver)
     {
         this.connectionModule = connectionModule;
         this.driver = driver;
@@ -21,8 +21,8 @@ public class ServerReceiver implements Runnable{
 
         while (connectionModule.isAlive())
         {
-            object = connectionModule.receive();
-            driver.setReceivedMessage(object);
+            object = driver.getSentMessage();
+            connectionModule.send(object);
         }
     }
 }

@@ -10,6 +10,7 @@ public class ConnectionModule {
     private StreamConnection streamConnection;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
+    private boolean alive;
 
     public ConnectionModule(StreamConnection streamConnection)
     {
@@ -17,8 +18,11 @@ public class ConnectionModule {
         try {
             this.objectOutputStream = new ObjectOutputStream(streamConnection.openOutputStream());
             this.objectInputStream = new ObjectInputStream(streamConnection.openInputStream());
+            alive = true;
+            //this.objectInputStream = new ObjectInputStream(streamConnection.openDataInputStream());
         } catch (IOException e) {
             e.printStackTrace();
+            alive = false;
         }
 
     }
@@ -29,6 +33,7 @@ public class ConnectionModule {
             objectOutputStream.writeObject(object);
         } catch (IOException e) {
             e.printStackTrace();
+            alive = false;
         }
     }
 
@@ -39,9 +44,15 @@ public class ConnectionModule {
             return object;
         } catch (IOException e) {
             e.printStackTrace();
+            alive = false;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean isAlive()
+    {
+        return alive;
     }
 }
